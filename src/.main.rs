@@ -1,4 +1,5 @@
 mod graph;
+mod ngram;
 
 use std::collections::HashMap;
 

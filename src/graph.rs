@@ -3,12 +3,23 @@ use std::collections::VecDeque;
 use std::collections::HashSet;
 
 
-pub struct Graph<T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug> {
+pub struct Graph<T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug + Node> {
     pub neighbors: HashMap<T, Vec<T>>,
     pub nodes: Vec<T>
 }
 
-impl <T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug> Graph<T>{
+pub trait Node {
+    fn equivalent(&self, other: &Self) -> bool;
+}
+
+impl Node for i32 {
+    fn equivalent(&self, other: &i32) -> bool{
+        return &self == &other
+    }
+}
+
+
+impl <T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug + Node> Graph<T>{
 
     fn get_neighbors(&self, node: &T) -> std::option::Option<&Vec<T>>{
         return self.neighbors.get(node);
@@ -20,7 +31,7 @@ impl <T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug> G
         let mut node: &T = start; 
         let mut parent: HashMap<&T,&T> = HashMap::new();
         let mut visited: HashSet<&T> = HashSet::new();
-
+        let mut last_node: std::option::Option<&T> = None;
 
         queue.push_back(node);
         visited.insert(node);
@@ -28,7 +39,8 @@ impl <T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug> G
         while !queue.is_empty() {
             node = queue.pop_front().expect("node value was not found");   
             
-            if node == end {
+            if node.equivalent(end) {
+                last_node = Some(end);
                 break;
             }
 
@@ -43,11 +55,12 @@ impl <T: std::cmp::Eq + std::hash::Hash + std::marker::Copy + std::fmt::Debug> G
 
         }
 
-        node = end;
-        
-        if !parent.contains_key(&end){
+        if last_node.is_none() || !parent.contains_key(last_node.unwrap()){
             return None;
         }
+
+        node = last_node.unwrap();
+        
        
         let mut path: Vec<T> = Vec::new();
         path.push(
