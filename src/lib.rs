@@ -1,9 +1,10 @@
+mod graph;
+
 #[macro_use]
 extern crate cpython;
 
+
 use cpython::{Python, PyResult, PyDict};
-
-
 
 fn test(_py: Python, val: PyDict) -> PyResult<u32> {
     return Ok(1);
@@ -20,9 +21,6 @@ fn depth_interal(_py: Python, val: PyDict) -> u32 {
         return 0
     }
     for i in val.items(_py){
-        if i.1.get_type(_py) == PyDict{
-            return depth_internal(_py, val) + 1; 
-        }
         return 0;
     }
     return 0;
