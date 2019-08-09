@@ -1,8 +1,17 @@
 mod graph;
+
+mod ngram_graph;
+use crate::ngram_graph::NGramGraph;
+mod ngram;
+
 #[macro_use]
 extern crate cpython;
 
 use cpython::{Python, PyResult, PyDict, PyList, PyInt, PyErr};
+
+use cpython::ToPyObject;
+use cpython::FromPyObject;
+use cpython::PythonObject;
 
 fn test(_py: Python, val: PyDict) -> PyResult<u32> {
     return Ok(1);
@@ -13,8 +22,12 @@ fn depth(_py: Python, val: PyDict) -> PyResult<u32> {
     return Ok(depth_internal(_py, val));
 }
 
-fn bfs(_py: Python, val: PyDict, n: PyInt) -> PyResult<PyInt> {
-    return Ok(n);
+fn bfs(py: Python, val: PyDict, n: PyInt) -> PyResult<u32> {
+
+    let ngg: NGramGraph = NGramGraph::new(py, val, FromPyObject::extract(py, &n.as_object()).unwrap());
+    
+    return Ok(ngg.size());
+
 }
 
 

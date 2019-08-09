@@ -1,6 +1,7 @@
 use crate::graph::Node;
 
 
+#[derive(Eq, PartialEq, Clone, Hash)]
 struct NGram {
     tokens: Vec<String>
 }
@@ -23,6 +24,7 @@ impl std::ops::Index<usize> for NGram{
         return &self.tokens[i];
     }
 }
+
 
 impl Node for NGram {
     // Two ngrams are equivalent if they share the same last values.

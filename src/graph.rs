@@ -7,21 +7,17 @@ pub trait Node: std::cmp::Eq + std::hash::Hash + std::clone::Clone {
 }
 
 pub struct SimpleGraph <T> where T: Node{
-    pub neighbors: HashMap<T, Vec<T>>,
-    pub nodes: Vec<T>
+    pub neighbors: HashMap<T, Vec<T>>
 }
 
 
 pub trait Graph<T>{
-    fn nodes(&self) -> &Vec<T>;
     fn get_neighbors(&self, node: &T) -> Option<&Vec<T>>;
+
 }
 
 impl <T> Graph<T> for SimpleGraph<T> 
     where T: Node{
-    fn nodes(&self) -> &Vec<T>{
-        return &self.nodes; 
-    }
 
     fn get_neighbors(&self, node: &T) -> Option<&Vec<T>>{
         return self.neighbors.get(node);  
@@ -102,7 +98,6 @@ mod graph_tests {
         nb.insert(5,vec![4]);
 
         let sg: SimpleGraph<i32> = SimpleGraph::<i32>{
-            nodes: vec![1,2,3,4,5],
             neighbors: nb
         };
         assert!(
@@ -116,7 +111,6 @@ mod graph_tests {
         nb.insert(2,vec![1]);
 
         let sg: SimpleGraph<i32> = SimpleGraph::<i32>{
-            nodes: vec![1,2],
             neighbors: nb
         };
 
@@ -134,7 +128,6 @@ mod graph_tests {
         nb.insert(2,vec![1]);
 
         let sg: SimpleGraph<i32> = SimpleGraph::<i32>{
-            nodes: vec![1,2,3,4,5],
             neighbors: nb
         };
 
