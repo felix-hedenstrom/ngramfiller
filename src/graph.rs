@@ -12,15 +12,18 @@ pub struct SimpleGraph <T> where T: Node{
 
 
 pub trait Graph<T>{
-    fn get_neighbors(&self, node: &T) -> Option<&Vec<T>>;
+    fn get_neighbors(&self, node: &T) -> Option<Vec<T>>;
 
 }
 
 impl <T> Graph<T> for SimpleGraph<T> 
     where T: Node{
 
-    fn get_neighbors(&self, node: &T) -> Option<&Vec<T>>{
-        return self.neighbors.get(node);  
+    fn get_neighbors(&self, node: &T) -> Option<Vec<T>>{
+        match self.neighbors.get(node){
+            Some(x) => return Some(x.to_vec()),
+            None => return None
+        }
     }
 }
 
@@ -31,30 +34,30 @@ impl Node for i32 {
 }
 
 
-pub fn bfs<T: Node, G: Graph<T>> (graph: &G, start: &T, end: &T) -> std::option::Option<Vec<T>> {
-    let mut queue: VecDeque<&T> = VecDeque::new();
-    let mut node: &T = start; 
-    let mut parent: HashMap<&T,&T> = HashMap::new();
-    let mut visited: HashSet<&T> = HashSet::new();
-    let mut last_node: std::option::Option<&T> = None;
+pub fn bfs<T: Node, G: Graph<T>> (graph: &G, start: T, end: T) -> std::option::Option<Vec<T>> {
+    let mut queue: VecDeque<T> = VecDeque::new();
+    let mut node: T = start; 
+    let mut parent: HashMap<T,T> = HashMap::new();
+    let mut visited: HashSet<T> = HashSet::new();
+    let mut last_node: std::option::Option<T> = None;
 
-    queue.push_back(node);
-    visited.insert(node);
+    queue.push_back(node.clone());
+    visited.insert(node.clone());
 
     while !queue.is_empty() {
-        node = queue.pop_front().expect("node value was not found");   
+        node = queue.pop_front().unwrap();   
         
-        if node.equivalent(end) {
+        if node.equivalent(&end) {
             last_node = Some(end);
             break;
         }
 
-        for neighbor in graph.get_neighbors(node).expect("node did not have neighbors"){
-            if !visited.contains(neighbor){
-                visited.insert(neighbor);
-                parent.insert(neighbor, node);
+        for neighbor in graph.get_neighbors(&node).expect("node did not have neighbors"){
+            if !visited.contains(&neighbor){
+                visited.insert(neighbor.clone());
+                parent.insert(neighbor.clone(), node.clone());
             
-                queue.push_back(neighbor);
+                queue.push_back(neighbor.clone());
             }
         }
 
@@ -70,13 +73,13 @@ pub fn bfs<T: Node, G: Graph<T>> (graph: &G, start: &T, end: &T) -> std::option:
     let mut path: Vec<T> = Vec::new();
 
     path.push(
-        (*node).clone()
+        node.clone()
     );
     
-    while parent.contains_key(node){
-        node = parent.get(node).expect("did not recieve node when expected");
+    while parent.contains_key(&node){
+        node = parent.get(&node).expect("did not recieve node when expected").clone();
         path.push(
-            (*node).clone()
+            node.clone()
         );
     }
     path.reverse();
@@ -101,7 +104,7 @@ mod graph_tests {
             neighbors: nb
         };
         assert!(
-            vec![1,2,5,4] == bfs(&sg, &1,&4).unwrap()  
+            vec![1,2,5,4] == bfs(&sg, 1,4).unwrap()  
         );
     }
 
@@ -117,7 +120,7 @@ mod graph_tests {
         
 
         assert!(
-            vec![2,1] == bfs(&sg, &2,&1).unwrap()  
+            vec![2,1] == bfs(&sg, 2,1).unwrap()  
         );
     }
 
@@ -132,7 +135,7 @@ mod graph_tests {
         };
 
         assert!(
-            vec![1] == bfs(&sg, &1,&1).unwrap()  
+            vec![1] == bfs(&sg, 1,1).unwrap()  
         );
     }
 }

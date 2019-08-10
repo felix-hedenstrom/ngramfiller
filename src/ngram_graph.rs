@@ -1,5 +1,7 @@
-use cpython::{Python, PyResult, PyDict, PyList, PyInt, PyErr, PyString};
+use cpython::{Python, PyDict};
 
+use crate::graph::Graph;
+use crate::ngram::NGram;
 
 enum Either<T1, T2> {
     SubGraph(T1),
@@ -54,16 +56,29 @@ impl NGramGraph {
     pub fn size(&self) -> u32{
         return self.n;
     }
+
+    fn get_neighbors_helper(&self, tokens: Vec<&String>) -> Option<Vec<NGram>>{
+        let endings = &self.follows;
+        
+        match endings {
+            Either::SubGraph(x) => println!("{:?}", x.keys()),
+            Either::LastWords(x) => println!("{:?}", x.keys())
+        }
+
+
+        return Some(vec![NGram::new(vec![String::from("this"), String::from("is"), String::from("a"), String::from("test")])]); 
+    }
 }
 
 
-//impl <NGram> Graph<NGram> for NGramGraph{
-//    pub fn get_neighbors(&self, node: &NGram) -> Option<Vec<NGram>>{
-//    
-//    }
-//}
+impl Graph<NGram> for NGramGraph{
+    fn get_neighbors(&self, node: &NGram) -> Option<Vec<NGram>>{
+        return self.get_neighbors_helper(node.tokens().iter().skip(1).collect()); 
+    }
+
+}
 
 
 fn keys(dict: PyDict, py: Python) -> Vec<String>{
-   return dict.items(py).into_iter().map(|(k, v)| FromPyObject::extract(py, &k).unwrap()).rev().collect();
+   return dict.items(py).into_iter().map(|(k, _v)| FromPyObject::extract(py, &k).unwrap()).rev().collect();
 }

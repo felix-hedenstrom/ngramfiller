@@ -2,19 +2,28 @@ use crate::graph::Node;
 
 
 #[derive(Eq, PartialEq, Clone, Hash)]
-struct NGram {
+pub struct NGram {
+    // https://stackoverflow.com/questions/25754863/how-to-create-a-rust-struct-with-string-members
     tokens: Vec<String>
 }
 
 impl NGram {
-    fn new(tokens_: Vec<String>) -> NGram{
+    pub fn new(tokens_: Vec<String>) -> NGram{
         NGram{
             tokens: tokens_,
         }
     }
 
+    pub fn as_vec(&self) -> Vec<String>{
+        return self.tokens.clone();
+    }
+
     fn len(&self) -> usize{
         return self.tokens.len()
+    }
+
+    pub fn tokens(&self) -> &Vec<String>{
+        return &self.tokens;
     }
 }
 

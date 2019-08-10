@@ -1,32 +1,33 @@
 mod graph;
 
+mod ngram;
 mod ngram_graph;
 use crate::ngram_graph::NGramGraph;
-mod ngram;
+use crate::graph::Graph;
+use crate::ngram::NGram;
 
 #[macro_use]
 extern crate cpython;
 
-use cpython::{Python, PyResult, PyDict, PyList, PyInt, PyErr};
+use cpython::{Python, PyResult, PyDict, PyList, PyInt};
 
-use cpython::ToPyObject;
 use cpython::FromPyObject;
+use cpython::ToPyObject;
 use cpython::PythonObject;
-
-fn test(_py: Python, val: PyDict) -> PyResult<u32> {
-    return Ok(1);
-}
-
-
 fn depth(_py: Python, val: PyDict) -> PyResult<u32> {
     return Ok(depth_internal(_py, val));
 }
 
-fn bfs(py: Python, val: PyDict, n: PyInt) -> PyResult<u32> {
+fn bfs(py: Python, val: PyDict, n: PyInt) -> PyResult<PyList> {
 
     let ngg: NGramGraph = NGramGraph::new(py, val, FromPyObject::extract(py, &n.as_object()).unwrap());
-    
-    return Ok(ngg.size());
+     
+    let answer = ngg.get_neighbors(&NGram::new(vec![String::from("this")])).unwrap();
+
+    let intermediate : Vec<Vec<String>> = answer.iter().map(|ngram| ngram.as_vec()).collect(); 
+    return Ok(intermediate.to_py_object(py));
+
+    //return Ok(ngg.size());
 
 }
 
@@ -51,7 +52,6 @@ fn depth_internal(_py: Python, val: PyDict) -> u32 {
 py_module_initializer!(libngramconnector, initlibngramconnector, PyInit_libngramconnector, |py, m | {
     
     r#try!(m.add(py, "__doc__", "This module is implemented in Rust"));
-    r#try!(m.add(py, "test", py_fn!(py, test(val: PyDict))));
     r#try!(m.add(py, "depth", py_fn!(py, depth(val: PyDict))));
     r#try!(m.add(py, "bfs", py_fn!(py, bfs(val: PyDict, n: PyInt))));
     Ok(())
