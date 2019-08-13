@@ -56,7 +56,7 @@ impl NGramGraph {
     /// Calls possible subgraphs if they exist
     fn get_neighbors_all(&self) -> Vec<NGram> {
         let mut all_ngrams = Vec::<NGram>::new();
-        println!("Get them all!");
+
         match &self.follows {
             Either::SubGraph(g) => {
                 let keys = g.keys();
@@ -91,21 +91,12 @@ impl NGramGraph {
         return all_ngrams;
     }
     fn get_neighbors_helper(&self, tokens: &Vec<&String>) -> Option<Vec<NGram>> {
-
-        if tokens.is_empty() {
-            return Some(vec![]);
-        }
-
         let endings = &self.follows;
-        println!("These are the tokens: {:?}", tokens);
         match tokens.first() {
             None => return Some(self.get_neighbors_all()),
             Some(&key_token) => match endings {
                 Either::SubGraph(sg) => {
-                    println!("Found a subgraph for token {:?}", key_token);
-
                     if !sg.contains_key(key_token) {
-                        println!("Did not contain the key :(. Does however contain keys:\n{:?}", sg.keys());
                         return None;
                     }
 
@@ -144,13 +135,13 @@ impl NGramGraph {
 
 impl Graph<NGram> for NGramGraph {
     fn get_neighbors(&self, node: &NGram) -> Option<Vec<NGram>> {
-        return self.get_neighbors_helper(&node.tokens().iter().skip( 
-                if node.size() < self.size(){
-                    0
-                }else{
-                    1
-                }
-            ).collect());
+        return self.get_neighbors_helper(
+            &node
+                .tokens()
+                .iter()
+                .skip(if node.size() < self.size() { 0 } else { 1 })
+                .collect(),
+        );
     }
 }
 
@@ -161,4 +152,99 @@ fn keys(dict: PyDict, py: Python) -> Vec<String> {
         .map(|(k, _v)| FromPyObject::extract(py, &k).unwrap())
         .rev()
         .collect();
+}
+#[cfg(test)]
+mod tests {
+
+
+    fn compare_unordered<T>(a: &Vec<T>, b: &Vec<T>)
+    where 
+        T: Eq + std::fmt::Debug + std::cmp::Ord + Clone
+    {
+        let mut locala: Vec<T> = a.to_vec();
+        let mut localb: Vec<T> = b.to_vec();
+        assert_eq!(locala.sort(), localb.sort());
+
+    }
+
+    macro_rules! hashmap {
+            ($( $key: expr => $val: expr ),*) => {{
+                         let mut map = ::std::collections::HashMap::new();
+                                  $( map.insert($key, $val); )*
+                                               map
+                                                   }}
+    }
+    macro_rules! s {
+        ($str:expr) => {
+            String::from($str);
+        };
+    }
+    #[derive(Eq, PartialEq)]
+    enum NGramSize {
+        Two,
+        Three
+    }
+
+    fn generate_testdata(ngs: NGramSize) -> NGramGraph {
+        let is_lowest_ngrams = NGramGraph {
+            n: 2,
+            follows: Either::LastWords(hashmap![
+                s!("a") => vec![s!("test"), s!("trial")],
+                s!("an") => vec![s!("assessment"), s!("approval")]
+            ]),
+        };
+        if ngs == NGramSize::Two {
+            return is_lowest_ngrams;
+        }
+        
+        return NGramGraph{
+            n: 3,
+            follows: 
+                Either::SubGraph(
+                    hashmap![
+                s!("is") => is_lowest_ngrams])
+        }
+    }
+
+    use super::*;
+    #[test]
+    fn test_get_neighbors_non_existing() {
+        let testdata = generate_testdata(NGramSize::Three);
+        assert_eq!(testdata.get_neighbors(&NGram::new(vec![s!("the")])), None);
+    }
+
+    #[test]
+    fn test_get_neighbors_2gram() {
+        let testdata = generate_testdata(NGramSize::Two);
+        assert_eq!(
+            testdata.get_neighbors(&NGram::new(vec![s!("a")])),
+            Some(vec![
+                NGram::new(vec![s!("a"), s!("test")]),
+                NGram::new(vec![s!("a"), s!("trial")])
+            ])
+        );
+    }
+    #[test]
+    fn test_get_neighbors_3gram() {
+       
+        let testdata = generate_testdata(NGramSize::Three);
+
+
+        compare_unordered(
+            &testdata.get_neighbors(&NGram::new(vec![s!("is")])).unwrap(),
+            &vec![
+                NGram::new(vec![s!("is"), s!("a"), s!("test")]),
+                NGram::new(vec![s!("is"), s!("a"), s!("trial")]),
+                NGram::new(vec![s!("is"), s!("an"), s!("assessment")]),
+                NGram::new(vec![s!("is"), s!("an"), s!("approval")]),
+            ]
+        );
+        compare_unordered(
+            &testdata.get_neighbors(&NGram::new(vec![s!("is"), s!("an")])).unwrap(),
+            &vec![
+                NGram::new(vec![s!("is"), s!("an"), s!("assessment")]),
+                NGram::new(vec![s!("is"), s!("an"), s!("approval")]),
+            ]
+        );
+    }
 }

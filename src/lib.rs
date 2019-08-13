@@ -2,34 +2,40 @@ mod graph;
 
 mod ngram;
 mod ngram_graph;
-use crate::graph::Graph;
-use crate::ngram::NGram;
+
+use crate::graph::{Graph};
+use crate::ngram::{NGram};
 use crate::ngram_graph::NGramGraph;
 
 #[macro_use]
 extern crate cpython;
 
-use cpython::{PyDict, PyInt, PyList, PyResult, Python};
+use cpython::{PyDict, PyInt, PyList, PyResult, Python, PyErr};
 
 use cpython::FromPyObject;
+
 use cpython::PythonObject;
 use cpython::ToPyObject;
 fn depth(_py: Python, val: PyDict) -> PyResult<u32> {
     return Ok(depth_internal(_py, val));
 }
 
-fn bfs(py: Python, val: PyDict, n: PyInt) -> PyResult<PyList> {
+fn bfs(py: Python, val: PyDict, n: PyInt, start: PyList, end:PyList) -> PyResult<PyList> {
     let ngg: NGramGraph =
         NGramGraph::new(py, val, FromPyObject::extract(py, &n.as_object()).unwrap());
+    let start: NGram = NGram::from_pylist(py, start);
+    let end: NGram = NGram::from_pylist(py, end);
 
-    let answer = ngg
-        .get_neighbors(&NGram::new(vec![String::from("this")]))
-        .unwrap();
-    let intermediate: Vec<Vec<String>> = answer.iter().map(|ngram| ngram.as_vec()).collect();
+    let path: Option<Vec<NGram>> = ngg.bfs(start, end);
 
-    return Ok(intermediate.to_py_object(py));
+    let mut answer: Vec<Vec<String>> = vec![];
+    
 
-    //return Ok(ngg.size());
+    for ngram in path.unwrap(){
+        answer.push(ngram.as_vec());
+    }
+
+    return Ok(answer.to_py_object(py));
 }
 
 /// Temporary code to test how to interface with PyDict
@@ -54,7 +60,7 @@ py_module_initializer!(
     |py, m| {
         r#try!(m.add(py, "__doc__", "This module is implemented in Rust"));
         r#try!(m.add(py, "depth", py_fn!(py, depth(val: PyDict))));
-        r#try!(m.add(py, "bfs", py_fn!(py, bfs(val: PyDict, n: PyInt))));
+        r#try!(m.add(py, "bfs", py_fn!(py, bfs(val: PyDict, n: PyInt, start: PyList, end: PyList))));
         Ok(())
     }
 );

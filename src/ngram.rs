@@ -1,6 +1,12 @@
 use crate::graph::Node;
 
-#[derive(Eq, PartialEq, Clone, Hash, Debug)]
+use cpython::FromPyObject;
+
+use cpython::{PyObject, PyList, Python};
+
+use cpython::PythonObject;
+
+#[derive(Eq, PartialEq, Clone, Hash, Debug, PartialOrd, Ord)]
 pub struct NGram {
     // https://stackoverflow.com/questions/25754863/how-to-create-a-rust-struct-with-string-members
     tokens: Vec<String>,
@@ -30,6 +36,20 @@ impl NGram {
     pub fn tokens(&self) -> &Vec<String> {
         return &self.tokens;
     }
+
+    pub fn from_pylist(py: Python, list: PyList) -> NGram{
+        
+        let as_vec: Vec<PyObject> = FromPyObject::extract(py, &list.as_object()).unwrap();
+        let mut answer: Vec<String> = Vec::new();
+        
+        for word in as_vec{
+            answer.push(FromPyObject::extract(py, &word).unwrap());
+        }
+
+        return NGram::new(answer);
+
+
+    }
 }
 
 impl std::ops::Index<usize> for NGram {
@@ -51,8 +71,6 @@ impl Node for NGram {
 
         let diff: usize = self.len() - other.len();
         let mut i = diff;
-
-        println!("{:?}", diff);
 
         while i < self.len() {
             if self[i] != other[i - diff] {

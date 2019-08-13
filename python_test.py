@@ -63,5 +63,5 @@ pprint.pprint(example_ngram)
 print(lnc.depth({"a": 1}))
 print(lnc.depth({"a": {"b": 1}}))
 print(lnc.depth(example_ngram))
-print(lnc.bfs(example_ngram, 3))
+print(lnc.bfs(example_ngram, 3, ["this"], ["structure"]))
 
