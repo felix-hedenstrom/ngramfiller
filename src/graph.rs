@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
 
-pub trait Node: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::fmt::Debug{
+pub trait Node: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::fmt::Debug {
     fn equivalent(&self, other: &Self) -> bool;
 }
 
@@ -27,10 +27,8 @@ pub trait Graph<T: Node> {
                 break;
             }
 
-            for neighbor in self
-                .get_neighbors(&node)
-                .unwrap_or(vec![])
-                //.expect("node did not have neighbors")
+            for neighbor in self.get_neighbors(&node).unwrap_or(vec![])
+            //.expect("node did not have neighbors")
             {
                 if !visited.contains(&neighbor) {
                     visited.insert(neighbor.clone());
@@ -68,7 +66,6 @@ impl Node for i32 {
         return &self == &other;
     }
 }
-
 
 #[cfg(test)]
 mod graph_tests {

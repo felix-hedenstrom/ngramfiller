@@ -2,7 +2,7 @@ use crate::graph::Node;
 
 use cpython::FromPyObject;
 
-use cpython::{PyObject, PyList, Python};
+use cpython::{PyList, PyObject, Python};
 
 use cpython::PythonObject;
 
@@ -37,18 +37,15 @@ impl NGram {
         return &self.tokens;
     }
 
-    pub fn from_pylist(py: Python, list: PyList) -> NGram{
-        
+    pub fn from_pylist(py: Python, list: PyList) -> NGram {
         let as_vec: Vec<PyObject> = FromPyObject::extract(py, &list.as_object()).unwrap();
         let mut answer: Vec<String> = Vec::new();
-        
-        for word in as_vec{
+
+        for word in as_vec {
             answer.push(FromPyObject::extract(py, &word).unwrap());
         }
 
         return NGram::new(answer);
-
-
     }
 }
 

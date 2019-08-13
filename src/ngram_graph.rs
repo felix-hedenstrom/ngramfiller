@@ -156,15 +156,13 @@ fn keys(dict: PyDict, py: Python) -> Vec<String> {
 #[cfg(test)]
 mod tests {
 
-
     fn compare_unordered<T>(a: &Vec<T>, b: &Vec<T>)
-    where 
-        T: Eq + std::fmt::Debug + std::cmp::Ord + Clone
+    where
+        T: Eq + std::fmt::Debug + std::cmp::Ord + Clone,
     {
         let mut locala: Vec<T> = a.to_vec();
         let mut localb: Vec<T> = b.to_vec();
         assert_eq!(locala.sort(), localb.sort());
-
     }
 
     macro_rules! hashmap {
@@ -182,7 +180,7 @@ mod tests {
     #[derive(Eq, PartialEq)]
     enum NGramSize {
         Two,
-        Three
+        Three,
     }
 
     fn generate_testdata(ngs: NGramSize) -> NGramGraph {
@@ -196,14 +194,12 @@ mod tests {
         if ngs == NGramSize::Two {
             return is_lowest_ngrams;
         }
-        
-        return NGramGraph{
+
+        return NGramGraph {
             n: 3,
-            follows: 
-                Either::SubGraph(
-                    hashmap![
-                s!("is") => is_lowest_ngrams])
-        }
+            follows: Either::SubGraph(hashmap![
+                s!("is") => is_lowest_ngrams]),
+        };
     }
 
     use super::*;
@@ -226,9 +222,7 @@ mod tests {
     }
     #[test]
     fn test_get_neighbors_3gram() {
-       
         let testdata = generate_testdata(NGramSize::Three);
-
 
         compare_unordered(
             &testdata.get_neighbors(&NGram::new(vec![s!("is")])).unwrap(),
@@ -237,14 +231,16 @@ mod tests {
                 NGram::new(vec![s!("is"), s!("a"), s!("trial")]),
                 NGram::new(vec![s!("is"), s!("an"), s!("assessment")]),
                 NGram::new(vec![s!("is"), s!("an"), s!("approval")]),
-            ]
+            ],
         );
         compare_unordered(
-            &testdata.get_neighbors(&NGram::new(vec![s!("is"), s!("an")])).unwrap(),
+            &testdata
+                .get_neighbors(&NGram::new(vec![s!("is"), s!("an")]))
+                .unwrap(),
             &vec![
                 NGram::new(vec![s!("is"), s!("an"), s!("assessment")]),
                 NGram::new(vec![s!("is"), s!("an"), s!("approval")]),
-            ]
+            ],
         );
     }
 }
