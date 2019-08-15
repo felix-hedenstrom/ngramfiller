@@ -10,7 +10,7 @@ use crate::ngram_graph::NGramGraph;
 #[macro_use]
 extern crate cpython;
 
-use cpython::{PyDict, PyErr, PyInt, PyList, PyResult, Python};
+use cpython::{PyDict, PyInt, PyList, PyResult, Python};
 
 use cpython::FromPyObject;
 
@@ -23,6 +23,7 @@ fn depth(_py: Python, val: PyDict) -> PyResult<u32> {
 fn bfs(py: Python, val: PyDict, n: PyInt, start: PyList, end: PyList) -> PyResult<PyList> {
     let ngg: NGramGraph =
         NGramGraph::new(py, val, FromPyObject::extract(py, &n.as_object()).unwrap());
+
     let start: NGram = NGram::from_pylist(py, start);
     let end: NGram = NGram::from_pylist(py, end);
 
@@ -30,11 +31,15 @@ fn bfs(py: Python, val: PyDict, n: PyInt, start: PyList, end: PyList) -> PyResul
 
     let mut answer: Vec<Vec<String>> = vec![];
 
-    for ngram in path.unwrap() {
-        answer.push(ngram.as_vec());
-    }
-
-    return Ok(answer.to_py_object(py));
+    return match path {
+        None => Ok(PyList::new(py, &vec![])),
+        Some(p) => {
+            for ngram in p {
+                answer.push(ngram.as_vec());
+            }
+            Ok(answer.to_py_object(py))
+        }
+    };
 }
 
 /// Temporary code to test how to interface with PyDict
