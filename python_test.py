@@ -1,5 +1,11 @@
 import target.debug.libngramconnector as lnc
 import pprint
+from enum import Enum
+
+class token(Enum):
+    end = "!END"
+
+
 
 example_ngram = {
         "this":
@@ -48,13 +54,26 @@ example_ngram = {
                 "3gram":
                     {
                         "data": 1
+                    },
+                token.end:
+                    {
+                        token.end: 1
                     }
+
+            },
+        token.end:
+            {
+                    token.end:
+                        {
+                            token.end: 1    
+                        }
             },
         "3gram":
             {
                 "data":
                     {
-                        "structure": 1
+                        "structure": 1,
+                        token.end: 1
                     }
             }
     }
@@ -64,4 +83,5 @@ print(lnc.depth({"a": 1}))
 print(lnc.depth({"a": {"b": 1}}))
 print(lnc.depth(example_ngram))
 print(lnc.bfs(example_ngram, 3, ["this"], ["structure"]))
+print(lnc.bfs(example_ngram, 3, ["this"], [token.end]))
 print(lnc.bfs(example_ngram, 3, ["non", "existing"], ["ngram"]))

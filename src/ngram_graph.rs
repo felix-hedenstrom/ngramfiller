@@ -8,7 +8,6 @@ enum Either<T1, T2> {
     LastWords(T2),
 }
 
-use cpython::FromPyObject;
 use std::collections::HashMap;
 
 pub struct NGramGraph {
@@ -23,8 +22,13 @@ impl NGramGraph {
 
             for (word, following_words) in data.items(py) {
                 follows.insert(
-                    FromPyObject::extract(py, &word).unwrap(),
-                    keys(following_words.cast_into::<PyDict>(py).unwrap(), py),
+                    word.to_string(),
+                    keys(
+                        following_words
+                            .cast_into::<PyDict>(py)
+                            .expect("expected a PyDict at n=2"),
+                        py,
+                    ),
                 );
             }
 
@@ -37,8 +41,14 @@ impl NGramGraph {
 
             for (word, following_words) in data.items(py) {
                 follows.insert(
-                    FromPyObject::extract(py, &word).unwrap(),
-                    NGramGraph::new(py, following_words.cast_into::<PyDict>(py).unwrap(), n - 1),
+                    word.to_string(),
+                    NGramGraph::new(
+                        py,
+                        following_words
+                            .cast_into::<PyDict>(py)
+                            .expect("expected a PyDict at n>2"),
+                        n - 1,
+                    ),
                 );
             }
 
@@ -102,7 +112,7 @@ impl NGramGraph {
 
                     let subngrams: Option<Vec<NGram>> = sg
                         .get(key_token)
-                        .unwrap()
+                        .expect("key did not exist")
                         .get_neighbors_helper(&tokens[1..].to_vec());
 
                     if subngrams.is_none() {
@@ -149,8 +159,7 @@ fn keys(dict: PyDict, py: Python) -> Vec<String> {
     return dict
         .items(py)
         .into_iter()
-        .map(|(k, _v)| FromPyObject::extract(py, &k).unwrap())
-        .rev()
+        .map(|(k, _v)| k.to_string())
         .collect();
 }
 #[cfg(test)]

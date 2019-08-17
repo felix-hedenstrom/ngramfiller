@@ -42,7 +42,7 @@ impl NGram {
         let mut answer: Vec<String> = Vec::new();
 
         for word in as_vec {
-            answer.push(FromPyObject::extract(py, &word).unwrap());
+            answer.push(word.to_string());
         }
 
         return NGram::new(answer);
