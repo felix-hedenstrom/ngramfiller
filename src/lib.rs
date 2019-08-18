@@ -21,18 +21,23 @@ fn depth(_py: Python, val: PyDict) -> PyResult<u32> {
 }
 
 fn bfs(py: Python, val: PyDict, n: PyInt, start: PyList, end: PyList) -> PyResult<PyList> {
+    dbg!("started translation");
+    dbg!(std::time::SystemTime::now());
     let ngg: NGramGraph = NGramGraph::new(
         py,
         val,
         FromPyObject::extract(py, &n.as_object())
             .expect("failed to extract an integer from the n argument"),
     );
-
+    dbg!("translated datastructure");
+    dbg!(std::time::SystemTime::now());
     let start: NGram = NGram::from_pylist(py, start);
     let end: NGram = NGram::from_pylist(py, end);
-
+    dbg!("started search {:?}"); 
+    dbg!(std::time::SystemTime::now());
     let path: Option<Vec<NGram>> = ngg.bfs(start, end);
-
+    dbg!("finished search"); 
+    dbg!(std::time::SystemTime::now());
     let mut answer: Vec<Vec<String>> = vec![];
 
     return match path {
