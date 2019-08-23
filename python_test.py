@@ -1,11 +1,16 @@
 import target.debug.libngramconnector as lnc
 import pprint
 from enum import Enum
-
+import time
 class token(Enum):
     end = "!END"
-
-
+timed_test_ngrams = None
+try:
+    import json
+    with open("./optional/3grams.json", "r") as f:
+        timed_test_ngrams = json.loads(f.read())
+except:
+    print("Did not load timed_test_ngrams")
 
 example_ngram = {
         "this":
@@ -85,3 +90,12 @@ print(lnc.depth(example_ngram))
 print(lnc.bfs(example_ngram, 3, ["this"], ["structure"]))
 print(lnc.bfs(example_ngram, 3, ["this"], [token.end]))
 print(lnc.bfs(example_ngram, 3, ["non", "existing"], ["ngram"]))
+
+if timed_test_ngrams:
+
+    start = time.time()
+    res = lnc.bfs(timed_test_ngrams, 3, ["i"], ["."])
+    end = time.time()
+
+    print("Search took {} seconds and resulted in \"{}\"".format(end - start, res))
+

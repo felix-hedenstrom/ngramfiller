@@ -1,3 +1,4 @@
+#![feature(hash_set_entry)]
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -5,19 +6,21 @@ use std::collections::VecDeque;
 pub trait Node: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::fmt::Debug {
     fn equivalent(&self, other: &Self) -> bool;
 }
-
 pub trait Graph<T: Node> {
     fn get_neighbors(&self, node: &T) -> Option<Vec<T>>;
 
     fn bfs(&self, start: T, end: T) -> std::option::Option<Vec<T>> {
-        let mut queue: VecDeque<T> = VecDeque::new();
-        let mut node: T = start;
-        let mut parent: HashMap<T, T> = HashMap::new();
-        let mut visited: HashSet<T> = HashSet::new();
-        let mut last_node: std::option::Option<T> = None;
 
-        queue.push_back(node.clone());
-        visited.insert(node.clone());
+        let mut visited: HashSet<T> = HashSet::new();
+        
+
+        let mut node: &T = visited.get_or_insert(start);
+
+        let mut queue: VecDeque<&T> = VecDeque::new();
+        let mut parent: HashMap<&T, &T> = HashMap::new();
+        let mut last_node: std::option::Option<&T> = None;
+
+        queue.push_back(node);
 
         while !queue.is_empty() {
             node = queue.pop_front().unwrap();
@@ -28,13 +31,14 @@ pub trait Graph<T: Node> {
             }
 
             for neighbor in self.get_neighbors(&node).unwrap_or(vec![])
-            //.expect("node did not have neighbors")
             {
                 if !visited.contains(&neighbor) {
-                    visited.insert(neighbor.clone());
-                    parent.insert(neighbor.clone(), node.clone());
 
-                    queue.push_back(neighbor.clone());
+                    let new_node: &T = visited.get_or_insert(neighbor);
+
+                    parent.insert(new_node, node);
+
+                    queue.push_back(new_node);
                 }
             }
         }
