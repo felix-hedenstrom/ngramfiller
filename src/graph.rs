@@ -7,14 +7,16 @@ pub trait Node: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::fmt::D
     fn equivalent(&self, other: &Self) -> bool;
 }
 pub trait Graph<T: Node> {
-    fn get_neighbors(&self, node: &T) -> Option<Vec<T>>;
+    fn get_neighbors<'a>(&'a self, node: &T) -> Option<Vec<T>>;
 
     fn bfs(&self, start: T, end: T) -> std::option::Option<Vec<T>> {
+        let mut ngrams: Vec<T> = Vec::new();
 
-        let mut visited: HashSet<T> = HashSet::new();
+        let mut visited: HashSet<&T> = HashSet::new();
+
+        visited.insert(&start);
         
-
-        let mut node: &T = visited.get_or_insert(start);
+        let mut node: &T = &start; 
 
         let mut queue: VecDeque<&T> = VecDeque::new();
         let mut parent: HashMap<&T, &T> = HashMap::new();
@@ -32,13 +34,15 @@ pub trait Graph<T: Node> {
 
             for neighbor in self.get_neighbors(&node).unwrap_or(vec![])
             {
-                if !visited.contains(&neighbor) {
 
-                    let new_node: &T = visited.get_or_insert(neighbor);
+                ngrams.push(neighbor);
+                let neighbor_p = ngrams.last_mut().unwrap();
 
-                    parent.insert(new_node, node);
+                if !visited.insert(neighbor_p){
+                    
+                    parent.insert(neighbor_p, node);
 
-                    queue.push_back(new_node);
+                    queue.push_back(neighbor_p);
                 }
             }
         }
